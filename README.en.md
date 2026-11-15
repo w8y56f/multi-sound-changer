@@ -18,7 +18,7 @@ Requires macOS 13 or later and Xcode. Open `MultiSoundChanger.xcodeproj`, select
 
 To check your setup in OBS, play a steady audio source and watch the BlackHole meter while moving the speaker slider.
 
-Current version **0.9.0**. Powered by Stone Wang.
+Current version **0.9.1**. Powered by Stone Wang.
 
 ## Package
 

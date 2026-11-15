@@ -18,7 +18,7 @@ Multi Sound Changer 是一款 macOS 菜单栏工具。它可以切换系统默�
 
 使用 OBS 时，可以播放一段固定音频，拖动扬声器滑块，同时观察 OBS 中 BlackHole 的电平。
 
-当前版本 **0.1.0**。Powered by Stone Wang.
+当前版本 **0.9.0**。Powered by Stone Wang.
 
 ## 打包
 
@@ -26,7 +26,7 @@ Multi Sound Changer 是一款 macOS 菜单栏工具。它可以切换系统默�
 
 在项目根目录运行 `bash scripts/build-release.sh` 构建 Release，之后用 `open "build/Build/Products/Release/Multi Sound Changer.app"` 启动。DMG 打包也使用同一份 Release 应用。
 
-在 **Settings → General** 可选 **Appearance**（System、Light、Dark，默认 System）和 **Language**（跟随系统、English、中文，默认跟随系统）。设置即时生效，并在重启后保留。
+在 **Settings → General** 可选 **Appearance**（System、Light、Dark，默认 System）和 **Language**（跟随系统、English、中文，默认跟随系统）。在 **Menu Bar Icon** 可从四款图标中选择，默认是喇叭内镂空 M。设置即时生效，并在重启后保留。
 
 ## 音量快捷键
 

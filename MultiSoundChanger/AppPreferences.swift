@@ -32,6 +32,22 @@ enum AppLanguage: String, CaseIterable {
     }
 }
 
+enum MenuBarIconStyle: String, CaseIterable {
+    case badge = "A"
+    case speakerAndM = "B"
+    case system = "C"
+    case cutoutM = "H"
+
+    var title: String {
+        switch self {
+        case .badge: "Cutout Badge"
+        case .speakerAndM: "Speaker and M"
+        case .system: "System Style"
+        case .cutoutM: "Speaker with Cutout M"
+        }
+    }
+}
+
 enum VolumeFeedbackPosition: String, CaseIterable {
     case center, lowerCenter, bottom
 
@@ -59,6 +75,10 @@ final class AppPreferences: ObservableObject {
         didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
     }
 
+    @Published var menuBarIconStyle: MenuBarIconStyle {
+        didSet { UserDefaults.standard.set(menuBarIconStyle.rawValue, forKey: "menuBarIconStyle") }
+    }
+
     @Published var volumeFeedbackPosition: VolumeFeedbackPosition {
         didSet { UserDefaults.standard.set(volumeFeedbackPosition.rawValue, forKey: "volumeFeedbackPosition") }
     }
@@ -67,6 +87,8 @@ final class AppPreferences: ObservableObject {
         let defaults = UserDefaults.standard
         appearance = defaults.string(forKey: "appAppearance").flatMap(AppAppearance.init(rawValue:)) ?? .system
         language = defaults.string(forKey: "appLanguage").flatMap(AppLanguage.init(rawValue:)) ?? .system
+        menuBarIconStyle = defaults.string(forKey: "menuBarIconStyle")
+            .flatMap(MenuBarIconStyle.init(rawValue:)) ?? .cutoutM
         volumeFeedbackPosition = defaults.string(forKey: "volumeFeedbackPosition")
             .flatMap(VolumeFeedbackPosition.init(rawValue:)) ?? .lowerCenter
     }
@@ -95,6 +117,11 @@ final class AppPreferences: ObservableObject {
         "Copied": "已复制",
         "Appearance": "外观",
         "Language": "语言",
+        "Menu Bar Icon": "菜单栏图标",
+        "Cutout Badge": "镂空徽标",
+        "Speaker and M": "喇叭和 M",
+        "System Style": "系统风格",
+        "Speaker with Cutout M": "镂空 M 喇叭",
         "System": "跟随系统",
         "Light": "浅色",
         "Dark": "深色",

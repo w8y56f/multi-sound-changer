@@ -9,8 +9,7 @@ struct MultiSoundChangerApp: App {
         MenuBarExtra {
             AudioPanel()
         } label: {
-            Image(nsImage: MenuBarIcon.image)
-                .accessibilityLabel("Multi Sound Changer")
+            MenuBarIconLabel()
         }
         .menuBarExtraStyle(.window)
     }
@@ -24,65 +23,130 @@ final class ShortcutAppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+private struct MenuBarIconLabel: View {
+    @ObservedObject private var preferences = AppPreferences.shared
+
+    var body: some View {
+        Image(nsImage: MenuBarIcon.image(for: preferences.menuBarIconStyle))
+            .accessibilityLabel("Multi Sound Changer")
+    }
+}
+
 @MainActor
 private enum MenuBarIcon {
-    static let image: NSImage = {
-        let icon = NSImage(size: NSSize(width: 18, height: 18), flipped: true) { _ in
-            guard let context = NSGraphicsContext.current?.cgContext else { return false }
-            let silhouette = CGMutablePath()
-            silhouette.addRoundedRect(in: CGRect(x: 0.5, y: 0.5, width: 17, height: 17),
-                                      cornerWidth: 4, cornerHeight: 4)
+    static func image(for style: MenuBarIconStyle) -> NSImage {
+        switch style {
+        case .badge: badge
+        case .speakerAndM: speakerAndM
+        case .system: system
+        case .cutoutM: cutoutM
+        }
+    }
 
-            // Enlarge the symbol as a unit, centered within the unchanged badge.
-            let symbolTransform = CGAffineTransform(translationX: 9.1, y: 9)
-                .scaledBy(x: 1.19, y: 1.19)
-                .translatedBy(x: -9.4, y: -9)
+    private static let badge: NSImage = {
+        let silhouette = CGMutablePath()
+        silhouette.addRoundedRect(in: CGRect(x: 0.5, y: 0.5, width: 17, height: 17),
+                                  cornerWidth: 4, cornerHeight: 4)
 
-            // The speaker and waves are transparent. The M restores the fill inside the speaker.
-            let speaker = CGMutablePath()
-            speaker.move(to: CGPoint(x: 3.5, y: 7))
-            speaker.addLine(to: CGPoint(x: 5.4, y: 7))
-            speaker.addLine(to: CGPoint(x: 9.6, y: 4.4))
-            speaker.addQuadCurve(to: CGPoint(x: 10.5, y: 4.9), control: CGPoint(x: 10.5, y: 3.9))
-            speaker.addLine(to: CGPoint(x: 10.5, y: 13.1))
-            speaker.addQuadCurve(to: CGPoint(x: 9.6, y: 13.6), control: CGPoint(x: 10.5, y: 14.1))
-            speaker.addLine(to: CGPoint(x: 5.4, y: 11))
-            speaker.addLine(to: CGPoint(x: 3.5, y: 11))
-            speaker.addQuadCurve(to: CGPoint(x: 3, y: 10.5), control: CGPoint(x: 3, y: 11))
-            speaker.addLine(to: CGPoint(x: 3, y: 7.5))
-            speaker.addQuadCurve(to: CGPoint(x: 3.5, y: 7), control: CGPoint(x: 3, y: 7))
-            speaker.closeSubpath()
-            silhouette.addPath(speaker, transform: symbolTransform)
+        // Enlarge the symbol as a unit, centered within the unchanged badge.
+        let symbolTransform = CGAffineTransform(translationX: 9.1, y: 9)
+            .scaledBy(x: 1.19, y: 1.19)
+            .translatedBy(x: -9.4, y: -9)
 
-            let waves = CGMutablePath()
-            waves.move(to: CGPoint(x: 11.8, y: 6.8))
-            waves.addQuadCurve(to: CGPoint(x: 11.8, y: 11.2), control: CGPoint(x: 13.9, y: 9))
-            waves.move(to: CGPoint(x: 13.3, y: 5.2))
-            waves.addQuadCurve(to: CGPoint(x: 13.3, y: 12.8), control: CGPoint(x: 17.3, y: 9))
-            silhouette.addPath(waves.copy(strokingWithWidth: 1, lineCap: .round,
-                                          lineJoin: .round, miterLimit: 1),
-                               transform: symbolTransform)
+        silhouette.addPath(speaker, transform: symbolTransform)
+        silhouette.addPath(soundWaves([(11.8, 2.2, 13.9), (13.3, 3.8, 17.3)], width: 1),
+                           transform: symbolTransform)
+        silhouette.addPath(letter, transform: symbolTransform)
+        return templateImage(width: 18, path: silhouette)
+    }()
 
-            let letter = CGMutablePath()
-            letter.addLines(between: [
-                CGPoint(x: 5.5, y: 7.4), CGPoint(x: 6.45, y: 7.4),
-                CGPoint(x: 7.5, y: 8.65), CGPoint(x: 8.55, y: 7.4),
-                CGPoint(x: 9.5, y: 7.4), CGPoint(x: 9.5, y: 10.6),
-                CGPoint(x: 8.55, y: 10.6), CGPoint(x: 8.55, y: 8.95),
-                CGPoint(x: 7.5, y: 10.15), CGPoint(x: 6.45, y: 8.95),
-                CGPoint(x: 6.45, y: 10.6), CGPoint(x: 5.5, y: 10.6)
-            ])
-            letter.closeSubpath()
-            silhouette.addPath(letter, transform: symbolTransform)
-
-            context.setFillColor(CGColor(gray: 1, alpha: 1))
-            context.addPath(silhouette)
-            context.fillPath(using: .evenOdd)
+    private static let speakerAndM: NSImage = {
+        let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let speaker = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: nil)?
+            .withSymbolConfiguration(configuration)
+        let letter = NSAttributedString(string: "M", attributes: [.font: NSFont.systemFont(ofSize: 10, weight: .semibold)])
+        let letterSize = letter.size()
+        let speakerWidth = speaker?.size.width ?? 0
+        let icon = NSImage(size: NSSize(width: ceil(speakerWidth + 3 + letterSize.width), height: 18), flipped: false) { rect in
+            if let speaker {
+                speaker.draw(at: NSPoint(x: 0, y: (rect.height - speaker.size.height) / 2),
+                             from: .zero, operation: .sourceOver, fraction: 1)
+            }
+            letter.draw(at: NSPoint(x: speakerWidth + 3, y: (rect.height - letterSize.height) / 2))
             return true
         }
         icon.isTemplate = true
         return icon
     }()
+
+    private static let system: NSImage = {
+        let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        guard let icon = NSImage(systemSymbolName: "speaker.wave.3.fill", accessibilityDescription: nil)?
+            .withSymbolConfiguration(configuration) else { return cutoutM }
+        icon.isTemplate = true
+        return icon
+    }()
+
+    private static let cutoutM: NSImage = {
+        let silhouette = CGMutablePath()
+        let cone = CGAffineTransform(a: 1.44, b: 0, c: 0, d: 1.36, tx: -3.1, ty: -3.24)
+        silhouette.addPath(speaker, transform: cone)
+        silhouette.addPath(letter, transform: cone)
+        silhouette.addPath(soundWaves([(13.7, 2.4, 15.65), (15.55, 4.25, 19.05), (17.5, 6, 22.4)], width: 1.2))
+        return templateImage(width: 22, path: silhouette)
+    }()
+
+    private static let speaker: CGPath = {
+        let speaker = CGMutablePath()
+        speaker.move(to: CGPoint(x: 3.5, y: 7))
+        speaker.addLine(to: CGPoint(x: 5.4, y: 7))
+        speaker.addLine(to: CGPoint(x: 9.6, y: 4.4))
+        speaker.addQuadCurve(to: CGPoint(x: 10.5, y: 4.9), control: CGPoint(x: 10.5, y: 3.9))
+        speaker.addLine(to: CGPoint(x: 10.5, y: 13.1))
+        speaker.addQuadCurve(to: CGPoint(x: 9.6, y: 13.6), control: CGPoint(x: 10.5, y: 14.1))
+        speaker.addLine(to: CGPoint(x: 5.4, y: 11))
+        speaker.addLine(to: CGPoint(x: 3.5, y: 11))
+        speaker.addQuadCurve(to: CGPoint(x: 3, y: 10.5), control: CGPoint(x: 3, y: 11))
+        speaker.addLine(to: CGPoint(x: 3, y: 7.5))
+        speaker.addQuadCurve(to: CGPoint(x: 3.5, y: 7), control: CGPoint(x: 3, y: 7))
+        speaker.closeSubpath()
+        return speaker
+    }()
+
+    private static let letter: CGPath = {
+        let letter = CGMutablePath()
+        letter.addLines(between: [
+            CGPoint(x: 5.5, y: 7.4), CGPoint(x: 6.45, y: 7.4),
+            CGPoint(x: 7.5, y: 8.65), CGPoint(x: 8.55, y: 7.4),
+            CGPoint(x: 9.5, y: 7.4), CGPoint(x: 9.5, y: 10.6),
+            CGPoint(x: 8.55, y: 10.6), CGPoint(x: 8.55, y: 8.95),
+            CGPoint(x: 7.5, y: 10.15), CGPoint(x: 6.45, y: 8.95),
+            CGPoint(x: 6.45, y: 10.6), CGPoint(x: 5.5, y: 10.6)
+        ])
+        letter.closeSubpath()
+        return letter
+    }()
+
+    private static func soundWaves(_ arcs: [(x: CGFloat, radiusY: CGFloat, controlX: CGFloat)], width: CGFloat) -> CGPath {
+        let waves = CGMutablePath()
+        for arc in arcs {
+            waves.move(to: CGPoint(x: arc.x, y: 9 - arc.radiusY))
+            waves.addQuadCurve(to: CGPoint(x: arc.x, y: 9 + arc.radiusY), control: CGPoint(x: arc.controlX, y: 9))
+        }
+        return waves.copy(strokingWithWidth: width, lineCap: .round, lineJoin: .round, miterLimit: 1)
+    }
+
+    private static func templateImage(width: CGFloat, path: CGPath) -> NSImage {
+        let icon = NSImage(size: NSSize(width: width, height: 18), flipped: true) { _ in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            context.setFillColor(CGColor(gray: 1, alpha: 1))
+            context.addPath(path)
+            context.fillPath(using: .evenOdd)
+            return true
+        }
+        icon.isTemplate = true
+        return icon
+    }
 }
 
 private struct AudioPanel: View {
@@ -538,6 +602,7 @@ private struct SettingsView: View {
                     Text(language == .system ? preferences.text("System") : language.rawValue).tag(language)
                 }
             }
+            menuBarIconChoices
             Divider()
             Toggle(preferences.text("Open at Login"), isOn: Binding(
                 get: { model.openAtLogin },
@@ -558,6 +623,31 @@ private struct SettingsView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var menuBarIconChoices: some View {
+        HStack(spacing: 8) {
+            Text(preferences.text("Menu Bar Icon"))
+            Spacer()
+            ForEach(MenuBarIconStyle.allCases, id: \.self) { style in
+                let selected = style == preferences.menuBarIconStyle
+                let title = preferences.text(style.title)
+                Button {
+                    preferences.menuBarIconStyle = style
+                } label: {
+                    Image(nsImage: MenuBarIcon.image(for: style))
+                        .frame(width: 40, height: 24)
+                        .foregroundStyle(selected ? Color.accentColor : Color.primary)
+                        .background(selected ? Color.accentColor.opacity(0.14) : Color.primary.opacity(0.06),
+                                    in: RoundedRectangle(cornerRadius: 6))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(title)
+                .accessibilityLabel(title)
+                .accessibilityAddTraits(selected ? [.isSelected] : [])
+            }
+        }
     }
 
     private var about: some View {

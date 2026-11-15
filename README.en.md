@@ -18,7 +18,7 @@ Requires macOS 13 or later and Xcode. Open `MultiSoundChanger.xcodeproj`, select
 
 To check your setup in OBS, play a steady audio source and watch the BlackHole meter while moving the speaker slider.
 
-Current version **0.1.0**. Powered by Stone Wang.
+Current version **0.9.0**. Powered by Stone Wang.
 
 ## Package
 
@@ -26,7 +26,7 @@ Run `bash scripts/package-dmg.sh` from the project root. It creates `build/Multi
 
 From the project root, run `bash scripts/build-release.sh` to build Release, then run `open "build/Build/Products/Release/Multi Sound Changer.app"`. DMG packaging uses the same Release app.
 
-In **Settings → General**, choose **Appearance** (System, Light, Dark, default System) and **Language** (System, English, or 中文, default System). Both preferences apply immediately and persist across launches.
+In **Settings → General**, choose **Appearance** (System, Light, Dark, default System) and **Language** (System, English, or 中文, default System). Use **Menu Bar Icon** to choose from four styles. The default is the speaker with a cutout M. These preferences apply immediately and persist across launches.
 
 ## Volume shortcuts
 

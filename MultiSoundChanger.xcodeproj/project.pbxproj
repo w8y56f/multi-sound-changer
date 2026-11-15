@@ -1,0 +1,143 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+        A20000000000000000000007 = {isa = PBXBuildFile; fileRef = A20000000000000000000008; };
+        A20000000000000000000008 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+        A20000000000000000000003 = {isa = PBXBuildFile; fileRef = A20000000000000000000006; };
+        A20000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeShortcuts.swift; sourceTree = "<group>"; };
+        A20000000000000000000002 = {isa = PBXBuildFile; fileRef = A20000000000000000000005; };
+        A20000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeFeedback.swift; sourceTree = "<group>"; };
+        A20000000000000000000001 = {isa = PBXBuildFile; fileRef = A20000000000000000000004; };
+        A20000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedVolume.swift; sourceTree = "<group>"; };
+        A10000000000000000000001 = {isa = PBXBuildFile; fileRef = A10000000000000000000004; };
+        A10000000000000000000002 = {isa = PBXBuildFile; fileRef = A10000000000000000000005; };
+        A10000000000000000000003 = {isa = PBXBuildFile; fileRef = A10000000000000000000006; };
+        A10000000000000000000016 = {isa = PBXBuildFile; fileRef = A10000000000000000000017; };
+        A10000000000000000000017 = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+        A10000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSoundChangerApp.swift; sourceTree = "<group>"; };
+        A10000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPanelModel.swift; sourceTree = "<group>"; };
+        A10000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAudioDevices.swift; sourceTree = "<group>"; };
+        A10000000000000000000007 = {isa = PBXFileReference; explicitFileType = wrapper.application; path = "Multi Sound Changer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+        A10000000000000000000008 = {
+            isa = PBXGroup;
+            children = (A10000000000000000000009, A1000000000000000000000A);
+            sourceTree = "<group>";
+        };
+        A10000000000000000000009 = {
+            isa = PBXGroup;
+            children = (A20000000000000000000008, A20000000000000000000004, A20000000000000000000006, A20000000000000000000005, A10000000000000000000004, A10000000000000000000005, A10000000000000000000006, A10000000000000000000017);
+            path = MultiSoundChanger;
+            sourceTree = "<group>";
+        };
+        A1000000000000000000000A = {
+            isa = PBXGroup;
+            children = (A10000000000000000000007);
+            name = Products;
+            sourceTree = "<group>";
+        };
+        A1000000000000000000000B = {
+            isa = PBXSourcesBuildPhase;
+            files = (A20000000000000000000007, A20000000000000000000001, A20000000000000000000003, A20000000000000000000002, A10000000000000000000001, A10000000000000000000002, A10000000000000000000003);
+        };
+        A10000000000000000000018 = {
+            isa = PBXResourcesBuildPhase;
+            files = (A10000000000000000000016);
+        };
+        A10000000000000000000015 = {
+            isa = PBXShellScriptBuildPhase;
+            alwaysOutOfDate = 1;
+            name = "Write Git revision";
+            outputPaths = ("$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/BuildRevision.txt");
+            shellPath = /bin/bash;
+            shellScript = "/bin/bash \"$SRCROOT/scripts/write-build-revision.sh\" \"$SRCROOT\" \"$SCRIPT_OUTPUT_FILE_0\"\n";
+        };
+        A1000000000000000000000C = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A10000000000000000000010;
+            buildPhases = (A1000000000000000000000B, A10000000000000000000018, A10000000000000000000015);
+            buildRules = ();
+            dependencies = ();
+            name = MultiSoundChanger;
+            productName = "Multi Sound Changer";
+            productReference = A10000000000000000000007;
+            productType = "com.apple.product-type.application";
+        };
+        A1000000000000000000000D = {
+            isa = PBXProject;
+            buildConfigurationList = A1000000000000000000000F;
+            compatibilityVersion = "Xcode 14.0";
+            developmentRegion = en;
+            knownRegions = (en, Base);
+            mainGroup = A10000000000000000000008;
+            productRefGroup = A1000000000000000000000A;
+            projectDirPath = "";
+            targets = (A1000000000000000000000C);
+        };
+        A1000000000000000000000F = {
+            isa = XCConfigurationList;
+            buildConfigurations = (A10000000000000000000011, A10000000000000000000012);
+            defaultConfigurationName = Release;
+        };
+        A10000000000000000000010 = {
+            isa = XCConfigurationList;
+            buildConfigurations = (A10000000000000000000013, A10000000000000000000014);
+            defaultConfigurationName = Release;
+        };
+        A10000000000000000000011 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ENABLE_USER_SCRIPT_SANDBOXING = NO;
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                SDKROOT = macosx;
+                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+            };
+            name = Debug;
+        };
+        A10000000000000000000012 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ENABLE_USER_SCRIPT_SANDBOXING = NO;
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                SDKROOT = macosx;
+                SWIFT_COMPILATION_MODE = wholemodule;
+            };
+            name = Release;
+        };
+        A10000000000000000000013 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_IDENTITY = "-";
+                CURRENT_PROJECT_VERSION = 1;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = MultiSoundChanger/Info.plist;
+                INFOPLIST_KEY_LSUIElement = YES;
+                MARKETING_VERSION = 0.1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = local.multisoundchanger.app;
+                PRODUCT_NAME = "Multi Sound Changer";
+                SWIFT_VERSION = 5.0;
+            };
+            name = Debug;
+        };
+        A10000000000000000000014 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_IDENTITY = "-";
+                CURRENT_PROJECT_VERSION = 1;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = MultiSoundChanger/Info.plist;
+                INFOPLIST_KEY_LSUIElement = YES;
+                MARKETING_VERSION = 0.1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = local.multisoundchanger.app;
+                PRODUCT_NAME = "Multi Sound Changer";
+                SWIFT_VERSION = 5.0;
+            };
+            name = Release;
+        };
+    };
+    rootObject = A1000000000000000000000D;
+}

@@ -143,15 +143,36 @@ private struct AudioPanel: View {
             .padding(16)
 
             Divider()
-            Button {
-                SettingsWindow.shared.show(.about)
-            } label: {
-                Text(preferences.text("About"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+            VStack(spacing: 0) {
+                footerButton("Audio MIDI Setup…") {
+                    let workspace = NSWorkspace.shared
+                    let url = workspace.urlForApplication(withBundleIdentifier: "com.apple.audio.AudioMIDISetup")
+                        ?? URL(fileURLWithPath: "/System/Applications/Utilities/Audio MIDI Setup.app")
+                    workspace.open(url)
+                }
+                footerButton("Sound Settings…") {
+                    let workspace = NSWorkspace.shared
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.Sound-Settings.extension"),
+                       workspace.open(url) {
+                        return
+                    }
+                    if let legacyURL = URL(string: "x-apple.systempreferences:com.apple.preference.sound") {
+                        workspace.open(legacyURL)
+                    }
+                }
+                footerButton("Show or Hide System Sound Icon…") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.ControlCenter-Settings.extension") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                footerButton("Exit", action: confirmQuit)
+                footerButton("Settings…") {
+                    SettingsWindow.shared.show()
+                }
+                footerButton("About") {
+                    SettingsWindow.shared.show(.about)
+                }
             }
-            .buttonStyle(PanelButtonStyle())
             .padding(.horizontal, 4)
             .padding(.vertical, 4)
         }
@@ -159,6 +180,16 @@ private struct AudioPanel: View {
         .fixedSize(horizontal: false, vertical: true)
         .onAppear { model.refresh() }
         .onReceive(updates) { _ in model.refresh() }
+    }
+
+    private func footerButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(preferences.text(title))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+        }
+        .buttonStyle(PanelButtonStyle())
     }
 
     private func confirmQuit() {

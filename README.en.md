@@ -26,14 +26,14 @@ Run `bash scripts/package-dmg.sh` from the project root. It creates `build/Multi
 
 From the project root, run `bash scripts/build-release.sh` to build Release, then run `open "build/Build/Products/Release/Multi Sound Changer.app"`. DMG packaging uses the same Release app.
 
-In **Settings → General**, choose **Appearance** (System, Light, Dark, default System) and **Language** (English or 中文, default English). Both preferences apply immediately and persist across launches.
+In **Settings → General**, choose **Appearance** (System, Light, Dark, default System) and **Language** (System, English, or 中文, default System). Both preferences apply immediately and persist across launches.
 
 ## Volume shortcuts
 
-Open **Settings → General → Volume Shortcuts** to record Increase Volume / Decrease Volume. Both start as Not Set. Include Command, Control or Option; Escape cancels and × clears. Bindings persist and registration conflicts are reported. Step defaults to 5 percentage points (range 1–20).
+Open **Settings → General → Volume Shortcuts** to record up to two sets of Increase Volume / Decrease Volume shortcuts. On a fresh install, Group 1 uses ⌃⌥⇧⌘↑ / ⌃⌥⇧⌘↓, and Group 2 uses ⌃⇧↑ / ⌃⇧↓. Each shortcut can be set independently. Both groups share the same step size. Include Command, Control or Option; Escape cancels and × clears. Bindings persist and registration conflicts are reported. Step defaults to 5 percentage points (range 1–20).
 
 Shortcuts follow the current default output and adjust its writable members, skipping BlackHole and unsupported devices. Every participating device receives the same delta; the entire group stops when any member reaches either boundary. For example, 50% / 30% becomes 55% / 35%, with an upper limit of 100% / 80%. Manual slider edits establish a new balance. Levels belong to physical devices and are not reset when switching groups.
 
-Optional feedback displays each device's actual level near the bottom of the pointer's screen for 1.2 seconds without taking focus. Configure BetterAndBetter to send the same shortcuts; synthetic-key compatibility needs local testing. The app must remain running. Failed group writes trigger best-effort rollback and display freshly read levels.
+Optional feedback displays each device's actual level without taking focus. It stays visible during consecutive adjustments and dismisses 1.2 seconds after the last one. Feedback Position offers Center, Lower Center (default), and Bottom. Configure BetterAndBetter to send the same shortcuts; synthetic-key compatibility needs local testing. The app must remain running. Failed group writes trigger best-effort rollback and display freshly read levels.
 
 Boundary tests: `swiftc -module-cache-path /tmp/msc-module-cache MultiSoundChanger/LinkedVolume.swift Tests/LinkedVolumeTests.swift -o /tmp/msc-tests && /tmp/msc-tests`.

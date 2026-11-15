@@ -2,3 +2,6 @@
 *.xcuserstate
 xcuserdata/
 .DS_Store
+
+# Local icon design previews
+/generated_images/

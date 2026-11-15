@@ -26,14 +26,14 @@ Multi Sound Changer 是一款 macOS 菜单栏工具。它可以切换系统默�
 
 在项目根目录运行 `bash scripts/build-release.sh` 构建 Release，之后用 `open "build/Build/Products/Release/Multi Sound Changer.app"` 启动。DMG 打包也使用同一份 Release 应用。
 
-在 **Settings → General** 可选 **Appearance**（System、Light、Dark，默认 System）和 **Language**（English、中文，默认 English）。设置即时生效，并在重启后保留。
+在 **Settings → General** 可选 **Appearance**（System、Light、Dark，默认 System）和 **Language**（跟随系统、English、中文，默认跟随系统）。设置即时生效，并在重启后保留。
 
 ## 音量快捷键
 
-在 **Settings → General → Volume Shortcuts** 设置 Increase Volume / Decrease Volume；默认均为 Not Set。点击录入组合键（含 Command、Control 或 Option），Esc 取消，× 清除。绑定会保存；注册冲突会提示。Step 默认 5 个百分点，可设为 1–20。
+在 **Settings → General → Volume Shortcuts** 最多设置两组 Increase Volume / Decrease Volume。新安装时，第 1 组默认为 ⌃⌥⇧⌘↑ / ⌃⌥⇧⌘↓，第 2 组默认为 ⌃⇧↑ / ⌃⇧↓。每个快捷键可独立绑定，两组共用步长。点击录入组合键（含 Command、Control 或 Option），Esc 取消，× 清除。绑定会保存；注册冲突会提示。Step 默认 5 个百分点，可设为 1–20。
 
 快捷键跟随当前默认输出。Multi-Output 中仅调整支持调节的成员，跳过 BlackHole 和不可调设备；每个成员同幅增减，任一个成员到达 100% / 0% 时整组停止。例如 50% / 30% → 55% / 35%，上限为 100% / 80%。手动调整单个滑块后，以新的实际音量差继续联动。音量属于设备自身，切换组合不会重置。
 
-屏幕底部显示各成员的实际音量，约 1.2 秒后消失，不抢焦点；可关闭 Show volume feedback。BetterAndBetter 可配置为发送相同组合键，需在本机验证合成按键兼容性。应用必须保持运行。设备写入失败时尝试恢复已调整成员，并显示实际读取的音量。
+音量提示显示各成员的实际音量，不抢焦点。连续调整时原地更新，在最后一次调整约 1.2 秒后消失。可关闭 Show volume feedback，或在 Feedback Position 选择屏幕中央、中央偏下（默认）或屏幕底部。BetterAndBetter 可配置为发送相同组合键，需在本机验证合成按键兼容性。应用必须保持运行。设备写入失败时尝试恢复已调整成员，并显示实际读取的音量。
 
 边界计算测试：`swiftc -module-cache-path /tmp/msc-module-cache MultiSoundChanger/LinkedVolume.swift Tests/LinkedVolumeTests.swift -o /tmp/msc-tests && /tmp/msc-tests`。

@@ -27,18 +27,57 @@ final class ShortcutAppDelegate: NSObject, NSApplicationDelegate {
 @MainActor
 private enum MenuBarIcon {
     static let image: NSImage = {
-        let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let speaker = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: nil)?
-            .withSymbolConfiguration(configuration)
-        let letter = NSAttributedString(string: "M", attributes: [.font: NSFont.systemFont(ofSize: 10, weight: .semibold)])
-        let letterSize = letter.size()
-        let speakerWidth = speaker?.size.width ?? 0
-        let icon = NSImage(size: NSSize(width: ceil(speakerWidth + 3 + letterSize.width), height: 18), flipped: false) { rect in
-            if let speaker {
-                speaker.draw(at: NSPoint(x: 0, y: (rect.height - speaker.size.height) / 2),
-                             from: .zero, operation: .sourceOver, fraction: 1)
-            }
-            letter.draw(at: NSPoint(x: speakerWidth + 3, y: (rect.height - letterSize.height) / 2))
+        let icon = NSImage(size: NSSize(width: 18, height: 18), flipped: true) { _ in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            let silhouette = CGMutablePath()
+            silhouette.addRoundedRect(in: CGRect(x: 0.5, y: 0.5, width: 17, height: 17),
+                                      cornerWidth: 4, cornerHeight: 4)
+
+            // Enlarge the symbol as a unit, centered within the unchanged badge.
+            let symbolTransform = CGAffineTransform(translationX: 9.1, y: 9)
+                .scaledBy(x: 1.19, y: 1.19)
+                .translatedBy(x: -9.4, y: -9)
+
+            // The speaker and waves are transparent. The M restores the fill inside the speaker.
+            let speaker = CGMutablePath()
+            speaker.move(to: CGPoint(x: 3.5, y: 7))
+            speaker.addLine(to: CGPoint(x: 5.4, y: 7))
+            speaker.addLine(to: CGPoint(x: 9.6, y: 4.4))
+            speaker.addQuadCurve(to: CGPoint(x: 10.5, y: 4.9), control: CGPoint(x: 10.5, y: 3.9))
+            speaker.addLine(to: CGPoint(x: 10.5, y: 13.1))
+            speaker.addQuadCurve(to: CGPoint(x: 9.6, y: 13.6), control: CGPoint(x: 10.5, y: 14.1))
+            speaker.addLine(to: CGPoint(x: 5.4, y: 11))
+            speaker.addLine(to: CGPoint(x: 3.5, y: 11))
+            speaker.addQuadCurve(to: CGPoint(x: 3, y: 10.5), control: CGPoint(x: 3, y: 11))
+            speaker.addLine(to: CGPoint(x: 3, y: 7.5))
+            speaker.addQuadCurve(to: CGPoint(x: 3.5, y: 7), control: CGPoint(x: 3, y: 7))
+            speaker.closeSubpath()
+            silhouette.addPath(speaker, transform: symbolTransform)
+
+            let waves = CGMutablePath()
+            waves.move(to: CGPoint(x: 11.8, y: 6.8))
+            waves.addQuadCurve(to: CGPoint(x: 11.8, y: 11.2), control: CGPoint(x: 13.9, y: 9))
+            waves.move(to: CGPoint(x: 13.3, y: 5.2))
+            waves.addQuadCurve(to: CGPoint(x: 13.3, y: 12.8), control: CGPoint(x: 17.3, y: 9))
+            silhouette.addPath(waves.copy(strokingWithWidth: 1, lineCap: .round,
+                                          lineJoin: .round, miterLimit: 1),
+                               transform: symbolTransform)
+
+            let letter = CGMutablePath()
+            letter.addLines(between: [
+                CGPoint(x: 5.5, y: 7.4), CGPoint(x: 6.45, y: 7.4),
+                CGPoint(x: 7.5, y: 8.65), CGPoint(x: 8.55, y: 7.4),
+                CGPoint(x: 9.5, y: 7.4), CGPoint(x: 9.5, y: 10.6),
+                CGPoint(x: 8.55, y: 10.6), CGPoint(x: 8.55, y: 8.95),
+                CGPoint(x: 7.5, y: 10.15), CGPoint(x: 6.45, y: 8.95),
+                CGPoint(x: 6.45, y: 10.6), CGPoint(x: 5.5, y: 10.6)
+            ])
+            letter.closeSubpath()
+            silhouette.addPath(letter, transform: symbolTransform)
+
+            context.setFillColor(CGColor(gray: 1, alpha: 1))
+            context.addPath(silhouette)
+            context.fillPath(using: .evenOdd)
             return true
         }
         icon.isTemplate = true
@@ -231,6 +270,13 @@ private struct AudioPanel: View {
 }
 
 private struct DeviceRow: View {
+    @ObservedObject private var preferences = AppPreferences.shared
+    @State private var isHovered = false
+    @State private var copied = false
+    @State private var copyFeedback: Task<Void, Never>?
+    @FocusState private var selectionFocused: Bool
+    @FocusState private var copyFocused: Bool
+
     let name: String
     let iconURL: URL?
     let symbolName: String?
@@ -240,6 +286,19 @@ private struct DeviceRow: View {
     let action: () -> Void
 
     var body: some View {
+        HStack(spacing: 0) {
+            selectionButton
+            copyButton
+        }
+        .padding(.trailing, 4)
+        .onHover { isHovered = $0 }
+        .onDisappear {
+            copyFeedback?.cancel()
+            copied = false
+        }
+    }
+
+    private var selectionButton: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark")
@@ -262,17 +321,49 @@ private struct DeviceRow: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                 Spacer(minLength: 8)
-                Text(connection)
+                Text(copied ? preferences.text("Copied") : connection)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(copied ? Color.accentColor : Color.secondary)
                     .fixedSize()
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
         }
         .buttonStyle(PanelButtonStyle())
+        .focused($selectionFocused)
         .help(name)
         .accessibilityAddTraits(selected ? [.isSelected] : [])
+    }
+
+    private var copyButton: some View {
+        Button(action: copyName) {
+            Image(systemName: copied ? "checkmark" : "square.on.square")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(copied ? Color.accentColor : Color.secondary)
+                .opacity(isHovered || selectionFocused || copyFocused || copied ? 1 : 0)
+                .frame(width: 24, height: 26)
+        }
+        .buttonStyle(PanelButtonStyle())
+        .focused($copyFocused)
+        .help(preferences.text("Copy Device Name"))
+        .accessibilityLabel(preferences.text("Copy device name: %@", name))
+    }
+
+    private func copyName() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        guard pasteboard.setString(name, forType: .string) else { return }
+
+        copied = true
+        copyFeedback?.cancel()
+        copyFeedback = Task { @MainActor in
+            do {
+                try await Task.sleep(for: .seconds(1))
+            } catch {
+                return
+            }
+            copied = false
+        }
     }
 
     @ViewBuilder
@@ -414,7 +505,7 @@ private struct SettingsView: View {
                 }
                 Picker(preferences.text("Language"), selection: $preferences.language) {
                     ForEach(AppLanguage.allCases, id: \.self) { language in
-                        Text(language.rawValue).tag(language)
+                        Text(language == .system ? preferences.text("System") : language.rawValue).tag(language)
                     }
                 }
                 Divider()

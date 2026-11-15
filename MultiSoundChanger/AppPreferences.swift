@@ -16,8 +16,32 @@ enum AppAppearance: String, CaseIterable {
 }
 
 enum AppLanguage: String, CaseIterable {
+    case system = "System"
     case english = "English"
     case chinese = "中文"
+
+    static func preferredLanguage(in identifiers: [String]) -> AppLanguage {
+        for identifier in identifiers {
+            switch Locale(identifier: identifier).language.languageCode?.identifier {
+            case "zh": return .chinese
+            case "en": return .english
+            default: continue
+            }
+        }
+        return .english
+    }
+}
+
+enum VolumeFeedbackPosition: String, CaseIterable {
+    case center, lowerCenter, bottom
+
+    var label: String {
+        switch self {
+        case .center: "Center"
+        case .lowerCenter: "Lower Center"
+        case .bottom: "Bottom"
+        }
+    }
 }
 
 @MainActor
@@ -35,10 +59,16 @@ final class AppPreferences: ObservableObject {
         didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
     }
 
+    @Published var volumeFeedbackPosition: VolumeFeedbackPosition {
+        didSet { UserDefaults.standard.set(volumeFeedbackPosition.rawValue, forKey: "volumeFeedbackPosition") }
+    }
+
     private init() {
         let defaults = UserDefaults.standard
         appearance = defaults.string(forKey: "appAppearance").flatMap(AppAppearance.init(rawValue:)) ?? .system
-        language = defaults.string(forKey: "appLanguage").flatMap(AppLanguage.init(rawValue:)) ?? .english
+        language = defaults.string(forKey: "appLanguage").flatMap(AppLanguage.init(rawValue:)) ?? .system
+        volumeFeedbackPosition = defaults.string(forKey: "volumeFeedbackPosition")
+            .flatMap(VolumeFeedbackPosition.init(rawValue:)) ?? .lowerCenter
     }
 
     func applyAppearance() {
@@ -46,7 +76,8 @@ final class AppPreferences: ObservableObject {
     }
 
     func text(_ key: String, _ arguments: CVarArg...) -> String {
-        let value = language == .chinese ? Self.chinese[key] ?? key : key
+        let effectiveLanguage = language == .system ? AppLanguage.preferredLanguage(in: Locale.preferredLanguages) : language
+        let value = effectiveLanguage == .chinese ? Self.chinese[key] ?? key : key
         return arguments.isEmpty ? value : String(format: value, arguments: arguments)
     }
 
@@ -54,6 +85,9 @@ final class AppPreferences: ObservableObject {
         "Settings": "设置",
         "General": "通用",
         "About": "关于",
+        "Copy Device Name": "复制设备名称",
+        "Copy device name: %@": "复制设备名称：%@",
+        "Copied": "已复制",
         "Appearance": "外观",
         "Language": "语言",
         "System": "跟随系统",
@@ -84,6 +118,7 @@ final class AppPreferences: ObservableObject {
         "Version %@ (%@)": "版本 %@（%@）",
         "Powered by Stone Wang": "由 Stone Wang 开发",
         "Volume Shortcuts": "音量快捷键",
+        "Shortcut Group %d": "第 %d 组快捷键",
         "Increase Volume": "提高音量",
         "Decrease Volume": "降低音量",
         "Press shortcut…": "请按下快捷键…",
@@ -92,11 +127,15 @@ final class AppPreferences: ObservableObject {
         "Clear %@ shortcut": "清除「%@」快捷键",
         "Step: %d percentage points": "步长：%d 个百分点",
         "Show volume feedback": "显示音量提示",
+        "Feedback Position": "提示位置",
+        "Center": "屏幕中央",
+        "Lower Center": "中央偏下",
+        "Bottom": "屏幕底部",
         "Follows the current output. Skips BlackHole and unsupported devices. Keeps volume differences; stops the whole group at either limit.": "跟随当前输出，跳过 BlackHole 和音量不可调的设备。保留设备之间的音量差，任一设备到达上限或下限时，整组停止向该方向调整。",
         "Press Escape to cancel. Include Command, Control or Option.": "按 Esc 取消。组合键须包含 Command、Control 或 Option。",
         "Couldn’t initialize global shortcuts (%d).": "无法初始化全局快捷键（%d）。",
         "Global shortcuts are unavailable. Restart the app to retry.": "全局快捷键不可用，请重启应用后重试。",
-        "Increase and decrease must use different shortcuts.": "提高和降低音量必须使用不同的快捷键。",
+        "This shortcut is already assigned to another volume binding.": "这组按键已绑定到另一个音量快捷键。",
         "Shortcut unavailable or already in use (%d). Choose another combination.": "快捷键不可用或已被占用（%d），请选择其他组合。",
         "Include Command, Control or Option in the shortcut.": "快捷键须包含 Command、Control 或 Option。",
         "Volume": "音量",

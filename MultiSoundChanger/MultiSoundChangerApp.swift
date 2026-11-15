@@ -519,7 +519,7 @@ private struct SettingsView: View {
                 .tag(SettingsTab.about)
         }
         .padding(16)
-        .frame(width: 470, height: 490)
+        .frame(width: 470, height: 640)
         .onChange(of: preferences.language) { _ in SettingsWindow.shared.updateTitle() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.refresh()
@@ -527,39 +527,37 @@ private struct SettingsView: View {
     }
 
     private var general: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                Picker(preferences.text("Appearance"), selection: $preferences.appearance) {
-                    ForEach(AppAppearance.allCases, id: \.self) { appearance in
-                        Text(preferences.text(appearance.rawValue)).tag(appearance)
-                    }
+        VStack(alignment: .leading, spacing: 10) {
+            Picker(preferences.text("Appearance"), selection: $preferences.appearance) {
+                ForEach(AppAppearance.allCases, id: \.self) { appearance in
+                    Text(preferences.text(appearance.rawValue)).tag(appearance)
                 }
-                Picker(preferences.text("Language"), selection: $preferences.language) {
-                    ForEach(AppLanguage.allCases, id: \.self) { language in
-                        Text(language == .system ? preferences.text("System") : language.rawValue).tag(language)
-                    }
-                }
-                Divider()
-                Toggle(preferences.text("Open at Login"), isOn: Binding(
-                    get: { model.openAtLogin },
-                    set: { model.setOpenAtLogin($0) }
-                ))
-                if model.loginStatus == .requiresApproval {
-                    Text(preferences.text("Allow Multi Sound Changer in Login Items to finish setup."))
-                        .foregroundStyle(.secondary)
-                    Button(preferences.text("Open Login Items Settings")) { SMAppService.openSystemSettingsLoginItems() }
-                }
-                if let error = model.loginError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Divider()
-                VolumeShortcutSettings()
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            Picker(preferences.text("Language"), selection: $preferences.language) {
+                ForEach(AppLanguage.allCases, id: \.self) { language in
+                    Text(language == .system ? preferences.text("System") : language.rawValue).tag(language)
+                }
+            }
+            Divider()
+            Toggle(preferences.text("Open at Login"), isOn: Binding(
+                get: { model.openAtLogin },
+                set: { model.setOpenAtLogin($0) }
+            ))
+            if model.loginStatus == .requiresApproval {
+                Text(preferences.text("Allow Multi Sound Changer in Login Items to finish setup."))
+                    .foregroundStyle(.secondary)
+                Button(preferences.text("Open Login Items Settings")) { SMAppService.openSystemSettingsLoginItems() }
+            }
+            if let error = model.loginError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Divider()
+            VolumeShortcutSettings()
         }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var about: some View {
